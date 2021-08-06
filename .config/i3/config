@@ -13,7 +13,7 @@ set $mod Mod1
 
 # Font for window titles. Will also be used by the bar unless a different font
 # is used in the bar {} block below.
-font pango:System San Francisco Display 12
+font pango:monospace 8
 
 # This font is widely installed, provides lots of unicode glyphs, right-to-left
 # text rendering and scalability on retina/hidpi displays (thanks to pango).
@@ -32,13 +32,10 @@ exec --no-startup-id nm-applet
 
 # Use pactl to adjust volume in PulseAudio.
 set $refresh_i3status killall -SIGUSR1 i3status
-# bindsym XF86AudioRaiseVolume exec --no-startup-id pactl set-sink-volume @DEFAULT_SINK@ +10% && $refresh_i3status
-# bindsym XF86AudioLowerVolume exec --no-startup-id pactl set-sink-volume @DEFAULT_SINK@ -10% && $refresh_i3status
-# bindsym XF86AudioMute exec --no-startup-id pactl set-sink-mute @DEFAULT_SINK@ toggle && $refresh_i3status
+bindsym XF86AudioRaiseVolume exec --no-startup-id pactl set-sink-volume @DEFAULT_SINK@ +10% && $refresh_i3status
+bindsym XF86AudioLowerVolume exec --no-startup-id pactl set-sink-volume @DEFAULT_SINK@ -10% && $refresh_i3status
+bindsym XF86AudioMute exec --no-startup-id pactl set-sink-mute @DEFAULT_SINK@ toggle && $refresh_i3status
 bindsym XF86AudioMicMute exec --no-startup-id pactl set-source-mute @DEFAULT_SOURCE@ toggle && $refresh_i3status
-bindsym XF86AudioRaiseVolume exec amixer -q -D pulse sset Master 5%+ && pkill -RTMIN+1 i3blocks 
-bindsym XF86AudioLowerVolume exec amixer -q -D pulse sset Master 5%- && pkill -RTMIN+1 i3blocks
-bindsym XF86AudioMute exec amixer -q -D pulse sset Master toggle && pkill -RTMIN+1 i3blocks
 
 # Use Mouse+$mod to drag floating windows to their wanted position
 floating_modifier $mod
@@ -48,6 +45,19 @@ bindsym $mod+Return exec i3-sensible-terminal
 
 # kill focused window
 bindsym $mod+Shift+q kill
+
+# start dmenu (a program launcher)
+# bindsym $mod+d exec --no-startup-id dmenu_run
+bindsym $mod+d exec --no-startup-id ~/.config/polybar/forest/scripts/launcher.sh
+
+# Start power menu
+bindsym $mod+shift+x exec --no-startup-id ~/.config/polybar/forest/scripts/powermenu.sh
+
+# A more modern dmenu replacement is rofi:
+# bindcode $mod+40 exec "rofi -modi drun,run -show drun"
+# There also is i3-dmenu-desktop which only displays applications shipping a
+# .desktop file. It is a wrapper around dmenu, so you need that installed.
+# bindcode $mod+40 exec --no-startup-id i3-dmenu-desktop
 
 # change focus
 bindsym $mod+h focus left
@@ -101,17 +111,16 @@ bindsym $mod+a focus parent
 
 # Define names for default workspaces for which we configure key bindings later on.
 # We use variables to avoid repeating the names in multiple places.
-
-set $ws1 "1 "
-set $ws2 "2 "
-set $ws3 "3 "
-set $ws4 "4 "
-set $ws5 "5 "
-set $ws6 "6 "
-set $ws7 "7 "
-set $ws8 "8 "
-set $ws9 "9 "
-set $ws10 "10 "
+set $ws1 "1"
+set $ws2 "2"
+set $ws3 "3"
+set $ws4 "4"
+set $ws5 "5"
+set $ws6 "6"
+set $ws7 "7"
+set $ws8 "8"
+set $ws9 "9"
+set $ws10 "10"
 
 # switch to workspace
 bindsym $mod+1 workspace number $ws1
@@ -144,6 +153,19 @@ bindsym $mod+Shift+r restart
 # exit i3 (logs you out of your X session)
 bindsym $mod+Shift+e exec "i3-nagbar -t warning -m 'You pressed the exit shortcut. Do you really want to exit i3? This will end your X session.' -B 'Yes, exit i3' 'i3-msg exit'"
 
+# Brightness control
+bindsym XF86MonBrightnessUp exec xbacklight -inc 20 # increase screen brightness
+bindsym XF86MonBrightnessDown exec xbacklight -dec 20 # decrease screen brightness
+
+# Audio control
+bindsym XF86AudioPlay exec playerctl play-pause
+bindsym XF86AudioPause exec playerctl pause
+bindsym XF86AudioNext exec playerctl next
+bindsym XF86AudioPrev exec playerctl previous
+
+# Launch flameshot
+bindsym --release Print exec --no-startup-id flameshot gui
+
 # resize window (you can also use the mouse for that)
 mode "resize" {
         # These bindings trigger as soon as you enter the resize mode
@@ -152,10 +174,10 @@ mode "resize" {
         # Pressing right will grow the window’s width.
         # Pressing up will shrink the window’s height.
         # Pressing down will grow the window’s height.
-	bindsym h resize shrink width 10 px or 10 ppt
-    	bindsym j resize grow height 10 px or 10 ppt
-    	bindsym k resize shrink height 10 px or 10 ppt
-    	bindsym l resize grow width 10 px or 10 ppt
+        bindsym h resize shrink width 10 px or 10 ppt
+        bindsym j resize grow height 10 px or 10 ppt
+        bindsym k resize shrink height 10 px or 10 ppt
+        bindsym l resize grow width 10 px or 10 ppt
 
         # same bindings, but for the arrow keys
         bindsym Left resize shrink width 10 px or 10 ppt
@@ -171,98 +193,76 @@ mode "resize" {
 
 bindsym $mod+r mode "resize"
 
-set $bg-color 	         #1c1b22
-set $inactive-bg-color   #42414d
-set $text-color          #f9f9fa
-set $inactive-text-color #ffffff
-set $urgent-bg-color     #E53935
+# Startup
+# exec --no-startup-id python ~/.scripts/ipc_i3_noBordersUnfocused.py
 
+# Appearance
 
-set $Locker i3lock --color '#1c1b22' && sleep 1
+# Borders
+default_border pixel 2
 
-set $mode_system System (l) lock, (e) logout, (s) suspend, (h) hibernate, (r) reboot, (Shift+s) shutdown
-mode "$mode_system" {
-    bindsym l exec --no-startup-id $Locker, mode "default"
-    bindsym e exec --no-startup-id i3-msg exit, mode "default"
-    bindsym s exec --no-startup-id $Locker && systemctl suspend, mode "default"
-    bindsym h exec --no-startup-id $Locker && systemctl hibernate, mode "default"
-    bindsym r exec --no-startup-id systemctl reboot, mode "default"
-    bindsym Shift+s exec --no-startup-id systemctl poweroff -i, mode "default"  
-
-    # back to normal: Enter or Escape
-    bindsym Return mode "default"
-    bindsym Escape mode "default"
-}
-
-bindsym $mod+shift+x mode "$mode_system"
-
-# start dmenu (a program launcher)
-# bindsym $mod+d exec dmenu_run
-# There also is the (new) i3-dmenu-desktop which only displays applications
-# shipping a .desktop file. It is a wrapper around dmenu, so you need that
-# installed.
-bindsym $mod+d exec --no-startup-id i3-dmenu-desktop --dmenu="dmenu -i -nb '$bg-color' -sb '$inactive-bg-color' -fn 'System San Francisco 12' -sf '$text-color' -nf '$text-color'"
-
-
-# window colors
-#                       border              background         text                 indicator
-client.focused          $bg-color           $bg-color          $text-color          #00ff00
-client.unfocused        $inactive-bg-color $inactive-bg-color $inactive-text-color #00ff00
-client.focused_inactive $inactive-bg-color $inactive-bg-color $inactive-text-color #00ff00
-client.urgent           $urgent-bg-color    $urgent-bg-color   $text-color          #00ff00
-
-hide_edge_borders both
-
-# Start i3bar to display a workspace bar (plus the system information i3status
-# finds out, if available)
-bar {
-	position top
-        status_command i3blocks -c ~/.config/i3/i3blocks.conf
-	colors {
-		background $bg-color
-	    	separator #757575
-		#                  border             background         text
-		focused_workspace  $bg-color          $bg-color          $text-color
-		inactive_workspace $inactive-bg-color $inactive-bg-color $inactive-text-color
-		urgent_workspace   $urgent-bg-color   $urgent-bg-color   $text-color
-	}	
-}
-
-# Window specific settings
-
-# for_window [class="^.*"] border pixel 1
-for_window [class="Firefox"] border none
+# Windows
+for_window [class="firefox"] border none
 for_window [class="Spotify"] border none
 for_window [class="discord"] border none
 for_window [class="Code"] border none
-assign [class="Firefox"] $ws1
-assign [class="konsole"] $ws2
+for_window [class="Pavucontrol"] floating enable
+
+# Workspace assingments
+assign [class="firefox"] $ws1
+assign [class="kitty"] $ws2
 assign [class="Code"] $ws3
+assign [class="Lutris"] $ws4
+assign [class="Steam"] $ws4
 assign [class="discord"] $ws9
 for_window [class="Spotify"] move container to workspace $ws10
-# Custom keybindings
 
-for_window [class="Pavucontrol"] floating enable, move position mouse
-for_window [class="Pavucontrol"] move down 36px
-# Sreen brightness controls
-bindsym XF86MonBrightnessUp exec xbacklight -inc 20 # increase screen brightness
-bindsym XF86MonBrightnessDown exec xbacklight -dec 20 # decrease screen brightness
+# Colors
+set $polybarcolor        #1b272c
+#set $bg-color 	         #ffffff
+#set $inactive-bg-color   #42414d
+set $text-color          #f9f9fa
+#set $inactive-text-color #ffffff
+#set $urgent-bg-color     #E53935
+set $transparent-border  #00000000
+set $border-color        #C4C7C5
 
-bindsym XF86AudioPlay exec playerctl play-pause
-bindsym XF86AudioPause exec playerctl pause
-bindsym XF86AudioNext exec playerctl next
-bindsym XF86AudioPrev exec playerctl previous
-# bindsym Print exec flameshot gui
-bindsym --release Print exec --no-startup-id flameshot gui
+# Gaps
+gaps inner 20
+gaps outer 0
+workspace $ws1 gaps inner 0
+workspace $ws1 gaps outer 0
+workspace $ws3 gaps inner 0
+workspace $ws3 gaps outer 0
+workspace $ws9 gaps inner 0
+workspace $ws9 gaps outer 0
+workspace $ws10 gaps inner 0
+workspace $ws10 gaps outer 0
 
-bindsym $mod+t exec /usr/local/bin/toggletouchpad.sh
+# class                 border  backgr. text    indicator child_border
+client.focused          $border-color $border-color $text-color $text-color $border-color
+client.unfocused         $transparent-border $transparent-border $text-color $text-color $transparent-border
+# client.focused          #ffffff #000000 #ffffff        #ffffff   #000000
 
-# Executions
-exec_always feh --bg-scale /usr/share/wallpapers/BytheWater/contents/images/1920x1080.jpg
-exec --no-startup-id dunst
-exec gtk-launch firefox.desktop
-exec gtk-launch org.kde.konsole.desktop
-exec gtk-launch spotify_adblock.desktop
-exec gtk-launch discord.desktop
-exec gtk-launch code.desktop
+# client.focused          #ffffffff #ffffffff #ffffff $polybarcolor   $polybarcolor
+# client.unfocused         #00000000 #00222222 #ffffff #00000000   #00000000
+#client.unfocused        $inactive-bg-color $inactive-bg-color $inactive-text-color #00ff00
+#client.focused_inactive $inactive-bg-color $inactive-bg-color $inactive-text-color #00ff00
+#client.urgent           $urgent-bg-color    $urgent-bg-color   $text-color          #00ff00
+#client.placeholder          $bg-color $bg-color #ffffff $bg-color   $bg-color
+
+#client.background #ffffff
+# Start i3bar to display a workspace bar (plus the system information i3status
+# finds out, if available)
+#bar {
+#        status_command i3status
+#}
+
+exec --no-startup-id betterlockscreen -u "$(awk -F "=" '/file/ {print $2}' ~/.config/nitrogen/bg-saved.cfg)"
+exec --no-startup-id ~/.config/polybar/forest/launch.sh 
+exec --no-startup-id gtk-launch firefox.desktop
+exec --no-startup-id gtk-launch kitty.desktop
+exec --no-startup-id gtk-launch spotify-adblock.desktop
+exec --no-startup-id gtk-launch discord.desktop
+exec --no-startup-id gtk-launch code.desktop
 exec i3-msg workspace $ws1
